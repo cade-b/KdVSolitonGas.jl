@@ -1,0 +1,4 @@
+name = "KdVSolitonGas"
+uuid = "372e2125-c582-4b86-b36f-e97890cd4f4e"
+authors = ["cade-b <cadeballew@gmail.com>"]
+version = "0.1.0"

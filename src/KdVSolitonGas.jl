@@ -7,7 +7,7 @@ include("AuxiliaryFunctions.jl")
 include("RHStructs.jl")
 include("Precomputations.jl")
 
-export precompute, deformed_RHP, undeformed_RHP, rhp, deformed_RHP_soliton, undeformed_RHP_soliton, rhp_soliton, deformed_RHP_solitons, undeformed_RHP_solitons, rhp_solitons
+export precompute, deformed_RHP, undeformed_RHP, rhp, deformed_RHP_soliton, undeformed_RHP_soliton, rhp_soliton, deformed_RHP_solitons, undeformed_RHP_solitons, rhp_solitons, get_g, gfunction, get_h, hfunction
 
 function (dp::deformed_RHP)(x,t)
     g = size(dp.bands,1)-1
@@ -807,4 +807,4 @@ function (rp::rhp_solitons)(x,t; flip_tol = 10., pole_circ = 0.001, flips=nothin
     end
 end
 
-end #module
+end # module KdVSolitonGas
