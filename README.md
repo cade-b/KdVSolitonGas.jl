@@ -70,6 +70,7 @@ Inserting multiple solitons requires inputting vectors of spectral parameters an
 u = precompute(intervals,κvec,χvec,h,typevec)
 ```
 **Optional arguments**
+
 The function ```precompute``` has two optional arguments that the user may modify. ```nmat``` designates the number of collocation points used on each circle and interval to solve the Riemann--Hilbert problem. By default, 120 points on each circle and 20 points on each interval are used. For solitons that have accumulated on $$n$$ pairs of intervals, ```nmat``` should be a $$n\times 2$$ matrix of integers (same dimensions as ```intervals```). ```nmat[j,1]``` designates the number of collocation points on the circle surrounding $$(a_j,b_j)$$, and ```nmat[j,2]``` designates the number of collocation points on the interval $$(a_j,b_j)$$.
 
 ```circ_size``` designates the size of the circular contours in the Riemann--Hilbert problem. The circle around $$(a_j,b_j)$$ will have diameter ```circ_size*(bⱼ-aⱼ)```. By default, ```circ_size=1.25```. One should ensure that this value is small enough so that no circles intersect each other or poles corresponding to inserted solitons.
