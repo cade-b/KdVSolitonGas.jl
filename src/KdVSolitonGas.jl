@@ -153,9 +153,9 @@ end
 
 function (rp::rhp)(x,t)
     if x>4t*rp.dp.bands[end,2]^2
-        return rp.up(x,t)#rhp = undeformed_RHP(rp.bands,rp.A₁₁p,rp.A₂₂p,rp.Cmatsp,rp.Chebymatp,rp.nmat[:,2],rp.gridmat[:,2],rp.rvals[:,1])     
+        return rp.up(x,t)   
     else
-        return rp.dp(x,t)#rhp = deformed_RHP(rp.bands,rp.A₁₁,rp.A₂₂,rp.Cmats,rp.Ω,rp.Chebymat,rp.nmat,rp.gridmat[:,1],rp.gvalsp,rp.hvalsp,rp.Ah_pre,rp.Bh_pre,rp.rvals)
+        return rp.dp(x,t)
     end
 end
 
