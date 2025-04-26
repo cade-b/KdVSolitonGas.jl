@@ -71,6 +71,20 @@ u = precompute(intervals,κvec,χvec,h,typevec)
 ```
 **Optional arguments**
 
-The function ```precompute``` has two optional arguments that the user may modify. ```nmat``` designates the number of collocation points used on each circle and interval to solve the Riemann--Hilbert problem. By default, 120 points on each circle and 20 points on each interval are used. For solitons that have accumulated on $$n$$ pairs of intervals, ```nmat``` should be a $$n\times 2$$ matrix of integers (same dimensions as ```intervals```). ```nmat[j,1]``` designates the number of collocation points on the circle surrounding $$(a_j,b_j)$$, and ```nmat[j,2]``` designates the number of collocation points on the interval $$(a_j,b_j)$$.
+The function ```precompute``` has two optional arguments that the user may modify:
+
+```nmat``` designates the number of collocation points used on each circle and interval to solve the Riemann--Hilbert problem. By default, 120 points on each circle and 20 points on each interval are used. For solitons that have accumulated on $$n$$ pairs of intervals, ```nmat``` should be a $$n\times 2$$ matrix of integers (same dimensions as ```intervals```). ```nmat[j,1]``` designates the number of collocation points on the circle surrounding $$(a_j,b_j)$$, and ```nmat[j,2]``` designates the number of collocation points on the interval $$(a_j,b_j)$$.
 
 ```circ_size``` designates the size of the circular contours in the Riemann--Hilbert problem. The circle around $$(a_j,b_j)$$ will have diameter ```circ_size*(bⱼ-aⱼ)```. By default, ```circ_size=1.25```. One should ensure that this value is small enough so that no circles intersect each other or poles corresponding to inserted solitons.
+
+When additional solitons are inserted, the soliton gas solution ```u(x,t)``` has several optional arguments:
+
+```flip_tol``` denotes the threshold at which the triangularity of residue conditions is flipped. This corresponds to the constant $$c$$ in Section 3.1 and defaults to 10.
+
+```pole_circ``` denotes the radius of the circle around each residue condition in which the solution to the pure gas problem is expanded in a Laurent series. It defaults to 0.001 and the user should ensure that it is small enough to avoid intersecting with other poles or the lenses of the pure gas problem.
+
+```flip``` or ```flips``` allows the user to manually designate which residue conditions should be flipped. For a single soliton addition, ```flip=1``` will flip the residue conditions and ```flip=0``` will preseve them. For multiple solitons, flips should be a binary vector with entries corresponding to each soliton.
+
+```max_deriv_terms``` designates the maximum number of terms used in the Laurent expansion of the solution to the pure gas problem around each residue. It defaults to 25. 
+
+```verbose``` is a flag that allows the user to diable warnings. This is done by setting ```verbose=false```.
