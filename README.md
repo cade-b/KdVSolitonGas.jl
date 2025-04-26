@@ -61,11 +61,15 @@ ylabel!(L"u(x,0)")
 Additional solitons can be inserted into the soliton gas by specifying additional arguments when calling ```precompute```. For instance a single soliton with spectral parameter $$\kappa=5$$ and norming constant $$\chi=10^{-6}$$ can be inserted by running
 ```
 κ, χ = 5., 1e-6
-u = precompute(intervals,κ, χ,h,typevec)
+u = precompute(intervals,κ,χ,h,typevec)
 ```
 Inserting multiple solitons requires inputting vectors of spectral parameters and norming constants. For instance, another soliton with spectral parameter $$\kappa=1.2$$ and norming constant $$\chi=100$$ may be inserted by running
 ```
 κvec = [1.2; 5.]
 χvec = [100; 1e-6]
-u = precompute(intervals,κvec, χvec,h,typevec)
+u = precompute(intervals,κvec,χvec,h,typevec)
 ```
+**Optional arguments**
+The function ```precompute``` has two optional arguments that the user may modify. ```nmat``` designates the number of collocation points used on each circle and interval to solve the Riemann--Hilbert problem. By default, 120 points on each circle and 20 points on each interval are used. For solitons that have accumulated on $$n$$ pairs of intervals, ```nmat``` should be a $$n\times 2$$ matrix of integers (same dimensions as ```intervals```). ```nmat[j,1]``` designates the number of collocation points on the circle surrounding $$(a_j,b_j)$$, and ```nmat[j,2]``` designates the number of collocation points on the interval $$(a_j,b_j)$$.
+
+```circ_size``` designates the size of the circular contours in the Riemann--Hilbert problem. The circle around $$(a_j,b_j)$$ will have diameter ```circ_size*(bⱼ-aⱼ)```. By default, ```circ_size=1.25```. One should ensure that this value is small enough so that no circles intersect each other or poles corresponding to inserted solitons.
