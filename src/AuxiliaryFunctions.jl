@@ -124,7 +124,6 @@ function compute_g_pre(z,bands,int_vals_2z,int_vals_8z3,gap_vals)
     #gaps = hcat(bands[1:end-1,2],bands[2:end,1])
     gvals = zeros(ComplexF64,g+1,3)
     
-    Rz = R(bands)(z)
     #integrate over bands
     for j = 1:g+1
         #out_points = bands[1:end .!= j,:]
@@ -133,12 +132,12 @@ function compute_g_pre(z,bands,int_vals_2z,int_vals_8z3,gap_vals)
         #println(nc)
         ChebyT = buildCheby(bands[j,1],bands[j,2],1)
         CauchyTx = CauchyInterval(z,ChebyT,ncx-1)
-        gvals[j,1] = -im*π*(CauchyTx*coeffsx)[1]*Rz
+        gvals[j,1] = -im*π*(CauchyTx*coeffsx)[1]
         
         coeffst = int_vals_8z3[j]
         nct = length(coeffst)
         CauchyTt = CauchyInterval(z,ChebyT,nct-1)
-        gvals[j,2] += im*π*(CauchyTt*coeffst)[1]*Rz
+        gvals[j,2] += im*π*(CauchyTt*coeffst)[1]
     end
     
     #integrate over gaps
@@ -149,10 +148,10 @@ function compute_g_pre(z,bands,int_vals_2z,int_vals_8z3,gap_vals)
         #println(nc)
         ChebyT = buildCheby(bands[j,2],bands[j+1,1],1)
         CauchyT = CauchyInterval(z,ChebyT,nc-1)
-        gvals[j,3] = -im*π*(CauchyT*coeffs)[1]*Rz  
+        gvals[j,3] = -im*π*(CauchyT*coeffs)[1]  
     end
     
-    gvals
+    return R(bands)(z)*gvals
 end
 
 function compute_g_post(gvals,x,t,Ω)
@@ -222,7 +221,7 @@ function compute_h_pre(z,bands,int_vals,gap_vals)
         ChebyT = buildCheby(bands[i,1],bands[i,2],1)
         CauchyT = CauchyInterval(z,ChebyT,nc-1)
         #global svde = CauchyT
-        h_vals[1,i] = R(bands)(z)*(-π*im*CauchyT*coeffs)[1]
+        h_vals[1,i] = (-π*im*CauchyT*coeffs)[1]
     end
     for i=1:g
         #out_points = vcat(bands[:,1][1:end .!= i+1],bands[:,2][1:end .!= i])
@@ -231,9 +230,9 @@ function compute_h_pre(z,bands,int_vals,gap_vals)
         #println(nc)
         ChebyT = buildCheby(bands[i,2],bands[i+1,1],1)
         CauchyT = CauchyInterval(z,ChebyT,nc-1)
-        h_vals[2,i] = R(bands)(z)*(-π*im*CauchyT*coeffs)[1]        
+        h_vals[2,i] = (-π*im*CauchyT*coeffs)[1]        
     end
-    h_vals
+    return R(bands)(z)*h_vals
 end
 
 function compute_h_post(h_vals,Avec,Ωs)
@@ -277,119 +276,30 @@ function get_g(intervals)
 end
 
 function (g::gfunction)(z,x,t)
-    Ωvec = g.Ω(x,t)
-    Rz = R(g.bands)(z)
-    gg = size(g.bands,1)-1
-    gz = 0.
-    #integrate over bands
-    for j = 1:gg+1
-        #out_points = bands[1:end .!= j,:]
-        coeffsx = g.int_vals_2z[j]
-        ncx = length(coeffsx)
-        #println(nc)
-        ChebyT = buildCheby(g.bands[j,1],g.bands[j,2],1)
-        CauchyTx = CauchyInterval(z,ChebyT,ncx-1)
-        gz -= x*im*π*(CauchyTx*coeffsx)[1]*Rz
-        
-        coeffst = g.int_vals_8z3[j]
-        nct = length(coeffst)
-        CauchyTt = CauchyInterval(z,ChebyT,nct-1)
-        gz += t*im*π*(CauchyTt*coeffst)[1]*Rz
-
-        if j < gg+1
-            #integrate over gaps
-            coeffs = g.gap_vals[j]
-            nc = length(coeffs)
-            #println(nc)
-            ChebyT = buildCheby(g.bands[j,2],g.bands[j+1,1],1)
-            CauchyT = CauchyInterval(z,ChebyT,nc-1)
-            gz -= Ωvec[j]*im*π*(CauchyT*coeffs)[1]*Rz
-        end
-    end
-
-    return gz
+    gvals = compute_g_pre(z,g.bands,g.int_vals_2z,g.int_vals_8z3,g.gap_vals)
+    return compute_g_post(gvals,x,t,g.Ω)
 end
 
 struct hfunction
     Ω::Function
     bands::Array{Float64,2}
-    hintvals::Array{ComplexF64}
+    int_vals
+    gap_vals
 end
 
 function get_h(intervals)
     bands = [-reverse(intervals); intervals]
     Ω = g_coeffs(bands)
-
-    g = size(bands,1)-1
     int_vals = cheby_int(bands)
     gap_vals = cheby_gap(bands)
-
-    hintvals = zeros(ComplexF64,2,g+1)
-    for i = 1:g+1
-        #out_points = bands[1:end .!= i,:]
-        coeffs = int_vals[i,1]
-        nc = length(coeffs)
-        #println(nc)
-        ChebyT = buildCheby(bands[i,1],bands[i,2],1)
-        CauchyT = CauchyInterval(z,ChebyT,nc-1)
-        #global svde = CauchyT
-        hintvals[1,i] = (-π*im*CauchyT*coeffs)[1]
-    end
-    for i=1:g
-        #out_points = vcat(bands[:,1][1:end .!= i+1],bands[:,2][1:end .!= i])
-        coeffs = gap_vals[i,1]
-        nc = length(coeffs)
-        #println(nc)
-        ChebyT = buildCheby(bands[i,2],bands[i+1,1],1)
-        CauchyT = CauchyInterval(z,ChebyT,nc-1)
-        hintvals[2,i] = (-π*im*CauchyT*coeffs)[1]        
-    end
-    hintvals
-end
-
-function h_coeffs(bands,Ωs)
-    # solve for coefficients to remove jump on gap
-    gaps = hcat(bands[1:end-1,2],bands[2:end,1])
-    g = size(bands,1)-1
-    A = zeros(ComplexF64,g+1,g+1)
-    B = zeros(ComplexF64,g+1,g)
-    #integrate over bands
-    for k = 1:g+1
-        out_points = bands[1:end .!= k,:]
-        gd = JacobiMappedInterval(bands[k,1],bands[k,2],-0.5,-0.5)
-        sp = OperatorApproximation.Jacobi(-0.5,-0.5,gd)
-        for j = 1:g+1
-            f = BasisExpansion(z -> q(j,z,bands)/R(out_points)(z), sp)
-            if length(f.c) >= 10000
-                @warn "OperatorApproximation error from integrating over bands in linear system for 𝔥-function"
-            end
-            A[j,k] = -im*π*f.c[1]
-        end
-    end
-    #println("h matrix condition number:",cond(A))   
-    #integrate over gaps
-    for k = 1:g
-        bk = zeros(ComplexF64,g+1,1)
-        out_points = vcat(bands[:,1][1:end .!= k+1],bands[:,2][1:end .!= k])
-        gd = JacobiMappedInterval(gaps[k,1],gaps[k,2],-0.5,-0.5)
-        sp = OperatorApproximation.Jacobi(-0.5,-0.5,gd)
-        for j = 1:g+1
-            f = BasisExpansion(z -> q(j,z,bands)/R(out_points)(z), sp)   
-            if length(f.c) >= 10000
-                @warn "OperatorApproximation error from integrating over gaps in linear system for 𝔥-function"
-            end
-            bk[j] = -im*π*f.c[1]
-        end
-        B[:,k] = bk
-    end
-    
-    b = -B*log.(exp.(-Ωs)) 
-    return A\b
+    return hfunction(Ω, bands, int_vals, gap_vals)
 end
 
 function (h::hfunction)(z,x,t)
+    (A,B) = h_coeffs_pre(h.bands)
     Ωvec = h.Ω(x,t)
-    Avec = h_coeffs(h.bands,Ωvec)
-    Rz = R(h.bands)(z)
-    return Rz*compute_h_post(h.hintvals,Avec,Ωs)
+    Avec = h_coeffs_post(A,B,Ωvec)
+
+    h_vals = compute_h_pre(z,h.bands,h.int_vals,h.gap_vals)
+    return compute_h_post(h_vals,Avec,Ωvec)
 end
