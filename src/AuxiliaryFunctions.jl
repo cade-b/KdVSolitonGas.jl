@@ -262,50 +262,52 @@ end
 struct gfunction
     Ω::Function
     bands::Array{Float64,2}
-    gintvals::Array{ComplexF64}
+    int_vals_2z
+    int_vals_8z3
+    gap_vals
 end
 
 function get_g(intervals)
     bands = [-reverse(intervals); intervals]
     Ω = g_coeffs(bands)
-
-    g = size(bands,1)-1
-    gvals = zeros(ComplexF64,g+1,3)
     int_vals_2z = cheby_int_2z(bands)
     int_vals_8z3 = cheby_int_8z3(bands)
-    #integrate over bands
-    for j = 1:g+1
-        #out_points = bands[1:end .!= j,:]
-        coeffsx = int_vals_2z[j]
-        ncx = length(coeffsx)
-        #println(nc)
-        ChebyT = buildCheby(bands[j,1],bands[j,2],1)
-        CauchyTx = CauchyInterval(z,ChebyT,ncx-1)
-        gvals[j,1] = -im*π*(CauchyTx*coeffsx)[1]
-        
-        coeffst = int_vals_8z3[j]
-        nct = length(coeffst)
-        CauchyTt = CauchyInterval(z,ChebyT,nct-1)
-        gvals[j,2] += im*π*(CauchyTt*coeffst)[1]
-    end
-    
-    #integrate over gaps
-    for j = 1:g
-        #out_points = vcat(bands[:,1][1:end .!= j+1],bands[:,2][1:end .!= j])
-        coeffs = gap_vals[j]
-        nc = length(coeffs)
-        #println(nc)
-        ChebyT = buildCheby(bands[j,2],bands[j+1,1],1)
-        CauchyT = CauchyInterval(z,ChebyT,nc-1)
-        gvals[j,3] = -im*π*(CauchyT*coeffs)[1] 
-    end
-
-    return gfunction(Ω,bands,gvals)
+    gap_vals = cheby_gap(bands)
+    return gfunction(Ω, bands, int_vals_2z, int_vals_8z3, gap_vals)
 end
 
 function (g::gfunction)(z,x,t)
+    Ωvec = g.Ω(x,t)
     Rz = R(g.bands)(z)
-    return Rz*compute_g_post(g.gintvals,x,t,g.Ω)
+    gg = size(g.bands,1)-1
+    gz = 0.
+    #integrate over bands
+    for j = 1:gg+1
+        #out_points = bands[1:end .!= j,:]
+        coeffsx = g.int_vals_2z[j]
+        ncx = length(coeffsx)
+        #println(nc)
+        ChebyT = buildCheby(g.bands[j,1],g.bands[j,2],1)
+        CauchyTx = CauchyInterval(z,ChebyT,ncx-1)
+        gz -= x*im*π*(CauchyTx*coeffsx)[1]*Rz
+        
+        coeffst = g.int_vals_8z3[j]
+        nct = length(coeffst)
+        CauchyTt = CauchyInterval(z,ChebyT,nct-1)
+        gz += t*im*π*(CauchyTt*coeffst)[1]*Rz
+
+        if j < gg+1
+            #integrate over gaps
+            coeffs = g.gap_vals[j]
+            nc = length(coeffs)
+            #println(nc)
+            ChebyT = buildCheby(g.bands[j,2],g.bands[j+1,1],1)
+            CauchyT = CauchyInterval(z,ChebyT,nc-1)
+            gz -= Ωvec[j]*im*π*(CauchyT*coeffs)[1]*Rz
+        end
+    end
+
+    return gz
 end
 
 struct hfunction

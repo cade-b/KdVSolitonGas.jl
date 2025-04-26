@@ -2,3 +2,7 @@ name = "KdVSolitonGas"
 uuid = "372e2125-c582-4b86-b36f-e97890cd4f4e"
 authors = ["cade-b <cadeballew@gmail.com>"]
 version = "0.1.0"
+
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+OperatorApproximation = "c7ec8986-4b84-48ba-9795-9bd526637602"
