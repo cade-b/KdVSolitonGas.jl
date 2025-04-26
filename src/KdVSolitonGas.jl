@@ -485,13 +485,13 @@ function (up::undeformed_RHP_soliton)(x,t; flip_tol = 10., pole_circ = 0.001, fl
     return 2*(s1[1]*s1[2]+s2[1]+s2[2])
 end
 
-function (rp::rhp_soliton)(x,t; flip_tol = 10., pole_circ = 0.001, flips=nothing, max_deriv_terms=25, verbose=true)
+function (rp::rhp_soliton)(x,t; flip_tol = 10., pole_circ = 0.001, flip=nothing, max_deriv_terms=25, verbose=true)
     if x>4t*rp.dp.bands[end,2]^2
         #println("Solving undeformed problem")
-        return rp.up(x,t; flip_tol = flip_tol, pole_circ = pole_circ, flips=flips, max_deriv_terms=max_deriv_terms, verbose=verbose)    
+        return rp.up(x,t; flip_tol = flip_tol, pole_circ = pole_circ, flip=flip, max_deriv_terms=max_deriv_terms, verbose=verbose)    
     else
         #println("Solving deformed problem")
-        return rp.dp(x,t; flip_tol = flip_tol, pole_circ = pole_circ, flips=flips, max_deriv_terms=max_deriv_terms, verbose=verbose)
+        return rp.dp(x,t; flip_tol = flip_tol, pole_circ = pole_circ, flip=flip, max_deriv_terms=max_deriv_terms, verbose=verbose)
     end
 end
 
