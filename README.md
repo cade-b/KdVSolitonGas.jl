@@ -2,15 +2,18 @@
 
 This repository contains the code for the paper "Effective computation of soliton gas primitive potentials": [arXiv link here](arXiv link here).
 
+**Installation**
+
 To install as a Julia package, run the following lines:
 ```
 using Pkg
 Pkg.add(url="https://github.com/cade-b/KdVSolitonGas.jl")
 ```
-The package can then be loaded by running
+The package can then be loaded via the command
 ```
 using KdVSolitonGas
 ```
+**Basic usage**
 
 Soliton gas solutions are generated with the function ```precompute```. This function requires at least 3 arguments:
 
@@ -52,4 +55,17 @@ uv = u.(xv,0.) #solution at time zero
 plot(xv,real.(uv), fillrange = -1, fillalpha = 0.35, linewidth = 2, label = false)
 xlabel!(L"x")
 ylabel!(L"u(x,0)")
+```
+**Soliton addition**
+
+Additional solitons can be inserted into the soliton gas by specifying additional arguments when calling ```precompute```. For instance a single soliton with spectral parameter $$\kappa=5$$ and norming constant $$\chi=10^{-6}$$ can be inserted by running
+```
+κ, χ = 5., 1e-6
+u = precompute(intervals,κ, χ,h,typevec)
+```
+Inserting multiple solitons requires inputting vectors of spectral parameters and norming constants. For instance, another soliton with spectral parameter $$\kappa=1.2$$ and norming constant $$\chi=100$$ may be inserted by running
+```
+κvec = [1.2; 5.]
+χvec = [100; 1e-6]
+u = precompute(intervals,κvec, χvec,h,typevec)
 ```
